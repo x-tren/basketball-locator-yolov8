@@ -1,0 +1,46 @@
+# ---------------------------------------------------------------------------
+# 篮球定位器 — 依赖版本锁定
+#
+# 本机唯一可用的解释器是 Python 3.8.5（已 EOL），因此整套依赖必须整体钉死。
+# 下面每个 pin 都已核实在 PyPI 上存在 cp38 / abi3 / py3-none-any wheel。
+#
+# ★ 不要relax ultralytics 的版本 ★
+#   8.4.100+ 起用了 Python 3.9+ 才有的 Path.is_relative_to()
+#     （ultralytics/utils/logger.py，_DriveInfo._current_mount 路径）
+#   8.4.x 还调用了 torch >= 2.5 才有的 torch.serialization.add_safe_globals()
+#     （ultralytics/nn/tasks.py）
+#   表面上看 8.4.x 仍声明 requires_python>=3.8，但那是过时的声明，装上去会在
+#   运行时抛 AttributeError。
+#
+# ★ numpy 1.24.4 是硬天花板 ★
+#   numpy 2.x 要求 Python >= 3.9。其余所有包都必须能接受 numpy 1.24.4：
+#     opencv-python 4.11 需要 numpy>=1.17.3  ✓
+#     scipy 1.10.1  需要 numpy<1.27      ✓
+#     matplotlib 3.7.5 需要 numpy>=1.20  ✓
+#
+# ★ polars 是个隐藏陷阱 ★
+#   ultralytics 8.3.x 硬依赖 polars，而最后一个有 cp38 wheel 的版本是 1.8.2。
+#   不知道这一点的话会误以为 8.3.253 根本装不上。
+#
+# 若日后升级到 Python >= 3.12，可以删除以上全部版本限制，直接装最新版。
+# ---------------------------------------------------------------------------
+
+ultralytics==8.3.253
+torch==2.4.1
+torchvision==0.19.1
+numpy==1.24.4
+opencv-python==4.11.0.86
+scipy==1.10.1
+matplotlib==3.7.5
+pillow==10.4.0
+polars==1.8.2
+psutil==5.9.8
+PyYAML==6.0.2
+requests==2.32.3
+ultralytics-thop==2.1.6
+typing_extensions==4.12.2
+
+# ByteTrack / BoT-SORT 跟踪需要 lap 做线性分配。
+# ultralytics/trackers/utils/matching.py 是直接 `import lap` 的，不装会在
+# model.track() 里抛 ModuleNotFoundError。
+lap==0.5.13
